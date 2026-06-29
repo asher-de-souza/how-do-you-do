@@ -366,6 +366,40 @@ button {
 @media (hover: none), (pointer: coarse) {
   .touchControls {
     display: grid;
+    right: 18px;
+    left: 18px;
+    grid-template-columns: repeat(3, 54px) 1fr repeat(2, 54px);
+    grid-template-rows: repeat(3, 54px);
+  }
+
+  .touchForward {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .touchLeft {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .touchRight {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .touchBack {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  .touchTurbo {
+    grid-column: 5;
+    grid-row: 3;
+  }
+
+  .touchJump {
+    grid-column: 6;
+    grid-row: 2;
   }
 
   .landing {
