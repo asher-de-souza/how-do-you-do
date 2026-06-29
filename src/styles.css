@@ -1,0 +1,390 @@
+:root {
+  color: #f7f7f2;
+  background: #121212;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+button {
+  font: inherit;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.landing {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 28px;
+  place-items: center;
+  width: 100%;
+  min-height: 100%;
+  padding: 34px 20px;
+  overflow: hidden;
+  background: #22272d;
+}
+
+.landing::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 0 42%, rgba(0, 0, 0, 0.28) 100%);
+}
+
+.landingTitle {
+  position: relative;
+  z-index: 1;
+  max-width: min(900px, 92vw);
+  margin: 0;
+  color: #ffffff;
+  font-size: 76px;
+  font-weight: 900;
+  line-height: 0.95;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow:
+    0 4px 0 #000000,
+    0 12px 32px rgba(0, 0, 0, 0.48);
+}
+
+.landingImageWrap {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 360px;
+  max-width: 72vw;
+  aspect-ratio: 1;
+}
+
+.landingImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.74);
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+}
+
+.playButton {
+  position: absolute;
+  z-index: 1;
+  width: 96px;
+  height: 96px;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.26);
+  backdrop-filter: blur(10px);
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.playButton::before {
+  position: absolute;
+  top: 50%;
+  left: 54%;
+  width: 0;
+  height: 0;
+  content: "";
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  border-left: 30px solid #ffffff;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.24));
+  transform: translate(-50%, -50%);
+}
+
+.playButton:hover {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.28);
+  transform: scale(1.06);
+}
+
+.playButton:focus-visible,
+.helpButton:focus-visible,
+.exitButton:focus-visible,
+.helpCloseButton:focus-visible,
+.touchButton:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 4px;
+}
+
+.gameShell,
+.gameCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+.gameShell {
+  position: relative;
+  background: #94c7ef;
+}
+
+.helpButton {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  color: #ffffff;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  background: rgba(16, 24, 32, 0.46);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(8px);
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.exitButton {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  background: rgba(16, 24, 32, 0.46);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(8px);
+}
+
+.exitButton::before,
+.exitButton::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 2px;
+  content: "";
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.exitButton::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.exitButton::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.helpModal {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 14, 18, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+.helpDialog {
+  position: relative;
+  width: min(410px, 100%);
+  color: #17202a;
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  border-radius: 8px;
+  background: rgba(249, 250, 247, 0.96);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  padding: 28px 28px 24px;
+}
+
+.helpDialog h2 {
+  margin: 0 44px 18px 0;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.helpDialog ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0 0 0 20px;
+  color: #2d3742;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.helpCloseButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  border: 1px solid rgba(23, 32, 42, 0.22);
+  border-radius: 999px;
+  background: rgba(23, 32, 42, 0.08);
+}
+
+.helpCloseButton::before,
+.helpCloseButton::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  content: "";
+  border-radius: 2px;
+  background: #17202a;
+}
+
+.helpCloseButton::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.helpCloseButton::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.confettiLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confettiPiece {
+  position: absolute;
+  top: -24px;
+  left: var(--x);
+  width: 11px;
+  height: 18px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confettiFall var(--duration) cubic-bezier(0.18, 0.72, 0.34, 1) var(--delay) forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift), 112vh, 0) rotate(var(--rot));
+  }
+}
+
+.touchControls {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: none;
+  grid-template-columns: repeat(3, 54px);
+  grid-template-rows: repeat(3, 54px);
+  gap: 8px;
+  touch-action: none;
+  user-select: none;
+}
+
+.touchButton {
+  width: 54px;
+  height: 54px;
+  color: #ffffff;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 999px;
+  background: rgba(16, 24, 32, 0.52);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.touchForward {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.touchLeft {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.touchRight {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.touchBack {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.touchTurbo {
+  grid-column: 1;
+  grid-row: 3;
+  background: rgba(245, 185, 54, 0.72);
+}
+
+.touchJump {
+  grid-column: 3;
+  grid-row: 3;
+  background: rgba(184, 59, 61, 0.68);
+}
+
+@media (hover: none), (pointer: coarse) {
+  .touchControls {
+    display: grid;
+  }
+
+  .landing {
+    gap: 22px;
+  }
+
+  .landingTitle {
+    font-size: 44px;
+    max-width: 340px;
+  }
+
+  .playButton {
+    width: 78px;
+    height: 78px;
+  }
+
+  .playButton::before {
+    border-top-width: 16px;
+    border-bottom-width: 16px;
+    border-left-width: 24px;
+  }
+}
