@@ -8,6 +8,7 @@ const clamp = THREE.MathUtils.clamp;
 const RIDE_HEIGHT = 0.24;
 const SKATER_COLLISION_RADIUS = 0.42;
 const BOARD_FLIP_DURATION = 0.62;
+const LEG_PUSH_DURATION = 0.36;
 const WALL_HALF_SIZE = 79.5;
 const SKATER_WORLD_LIMIT = 77;
 const WALL_LENGTH = WALL_HALF_SIZE * 2 + 1;
@@ -59,6 +60,8 @@ const RAMP_CONFIGS = [
   { position: [-4.6, 0.065, 4.9], rotation: Math.PI / 2, width: 4.4, depth: 2.8, height: 0.78 },
   { position: [4.7, 0.065, -0.8], rotation: -Math.PI / 2, width: 4.4, depth: 2.8, height: 0.78 },
   { position: [0, 0.065, 8.6], rotation: Math.PI, width: 7.4, depth: 3.1, height: 1.05 },
+  { position: [-33, 0.055, -31], rotation: 0.74, width: 3.2, depth: 2.1, height: 0.46 },
+  { position: [42, 0.075, -24], rotation: Math.PI / 2, width: 9.8, depth: 5.9, height: 2.25 },
 ];
 
 const WORLD_COLLIDERS = [
@@ -599,6 +602,8 @@ function SkaterController({ touchInput }) {
   const board = useRef();
   const torso = useRef();
   const wheels = useRef([]);
+  const pushLeg = useRef();
+  const pushFoot = useRef();
   const keyboard = useKeyboardInput();
   const cameraPosition = useMemo(() => new THREE.Vector3(), []);
   const cameraLookAt = useMemo(() => new THREE.Vector3(), []);
@@ -613,6 +618,7 @@ function SkaterController({ touchInput }) {
     boostWasDown: false,
     boardFlipTime: 0,
     boardFlipDirection: 1,
+    legPushTime: 0,
   });
 
   useEffect(() => {
@@ -647,6 +653,7 @@ function SkaterController({ touchInput }) {
         skater.jumpWasDown = false;
         skater.boostWasDown = false;
         skater.boardFlipTime = 0;
+        skater.legPushTime = 0;
       },
     };
 
@@ -690,6 +697,7 @@ function SkaterController({ touchInput }) {
     if (boostPressed) {
       if (wasGrounded) {
         skater.speed = Math.max(skater.speed, 8.5);
+        skater.legPushTime = LEG_PUSH_DURATION;
       } else {
         skater.boardFlipTime = BOARD_FLIP_DURATION;
         skater.boardFlipDirection = turn !== 0 ? -Math.sign(turn) : -skater.boardFlipDirection;
@@ -744,10 +752,13 @@ function SkaterController({ touchInput }) {
     }
 
     skater.boardFlipTime = Math.max(0, skater.boardFlipTime - dt);
+    skater.legPushTime = Math.max(0, skater.legPushTime - dt);
     const flipProgress = 1 - skater.boardFlipTime / BOARD_FLIP_DURATION;
     const flipRotation = skater.boardFlipTime > 0
       ? skater.boardFlipDirection * flipProgress * Math.PI * 2
       : 0;
+    const legPushProgress = 1 - skater.legPushTime / LEG_PUSH_DURATION;
+    const legPush = skater.legPushTime > 0 ? Math.sin(legPushProgress * Math.PI) : 0;
 
     group.current.position.copy(skater.position);
     group.current.rotation.y = skater.heading;
@@ -756,6 +767,17 @@ function SkaterController({ touchInput }) {
     board.current.rotation.z = flipRotation - turn * clamp(Math.abs(skater.speed) / 12, 0, 0.24);
     torso.current.rotation.x = clamp(rampTilt * 0.45 - skater.verticalVelocity / 48, -0.18, 0.18);
     torso.current.rotation.z = -turn * clamp(Math.abs(skater.speed) / 18, 0, 0.18);
+
+    if (pushLeg.current) {
+      pushLeg.current.rotation.x = -0.1 - legPush * 0.95;
+      pushLeg.current.position.z = -0.16 - legPush * 0.08;
+    }
+
+    if (pushFoot.current) {
+      pushFoot.current.position.set(-0.2 - legPush * 0.08, 0.32 - legPush * 0.08, -0.32 - legPush * 0.54);
+      pushFoot.current.rotation.x = -0.16 - legPush * 0.85;
+      pushFoot.current.rotation.z = legPush * 0.12;
+    }
 
     wheels.current.forEach((wheel) => {
       if (wheel) {
@@ -779,12 +801,18 @@ function SkaterController({ touchInput }) {
 
   return (
     <group ref={group}>
-      <SkaterModel boardRef={board} torsoRef={torso} wheelRefs={wheels} />
+      <SkaterModel
+        boardRef={board}
+        torsoRef={torso}
+        wheelRefs={wheels}
+        pushLegRef={pushLeg}
+        pushFootRef={pushFoot}
+      />
     </group>
   );
 }
 
-function SkaterModel({ boardRef, torsoRef, wheelRefs }) {
+function SkaterModel({ boardRef, torsoRef, wheelRefs, pushLegRef, pushFootRef }) {
   return (
     <group>
       <group ref={boardRef}>
@@ -802,21 +830,23 @@ function SkaterModel({ boardRef, torsoRef, wheelRefs }) {
         ))}
       </group>
 
-      <PlayerModel torsoRef={torsoRef} />
+      <PlayerModel torsoRef={torsoRef} pushLegRef={pushLegRef} pushFootRef={pushFootRef} />
     </group>
   );
 }
 
-function PlayerModel({ torsoRef }) {
+function PlayerModel({ torsoRef, pushLegRef, pushFootRef }) {
   return (
     <group position={[0, 0.2, 0]}>
-      <Sneaker position={[-0.2, 0.32, -0.32]} rotation={-0.16} />
+      <Sneaker rootRef={pushFootRef} position={[-0.2, 0.32, -0.32]} rotation={-0.16} />
       <Sneaker position={[0.2, 0.32, 0.32]} rotation={0.18} />
 
-      <mesh castShadow position={[-0.18, 0.77, -0.16]} rotation-x={-0.1}>
-        <capsuleGeometry args={[0.09, 0.58, 8, 14]} />
-        <meshStandardMaterial color="#293343" roughness={0.84} />
-      </mesh>
+      <group ref={pushLegRef} position={[-0.18, 0.77, -0.16]} rotation-x={-0.1}>
+        <mesh castShadow>
+          <capsuleGeometry args={[0.09, 0.58, 8, 14]} />
+          <meshStandardMaterial color="#293343" roughness={0.84} />
+        </mesh>
+      </group>
       <mesh castShadow position={[0.18, 0.77, 0.18]} rotation-x={0.1}>
         <capsuleGeometry args={[0.09, 0.58, 8, 14]} />
         <meshStandardMaterial color="#293343" roughness={0.84} />
@@ -952,9 +982,9 @@ function PlayerModel({ torsoRef }) {
   );
 }
 
-function Sneaker({ position, rotation }) {
+function Sneaker({ rootRef, position, rotation }) {
   return (
-    <group position={position} rotation-x={rotation}>
+    <group ref={rootRef} position={position} rotation-x={rotation}>
       <mesh castShadow position={[0, -0.055, 0]}>
         <boxGeometry args={[0.29, 0.052, 0.52]} />
         <meshStandardMaterial color="#171a1d" roughness={0.66} />
